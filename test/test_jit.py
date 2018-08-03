@@ -106,6 +106,16 @@ def get_fn(file_name, script_path):
     fn = module.fn
     return fn
 
+# Python equivalents for the empty list construction builtins. We need
+# these otherwise the tests won't execute in regular Python mode.
+def _construct_empty_int_list():
+    return []
+
+def _construct_empty_float_list():
+    return []
+
+def _construct_empty_tensor_list():
+    return []
 
 class JitTestCase(TestCase):
     def assertExpectedONNXGraph(self, trace, *args, **kwargs):
@@ -2055,17 +2065,6 @@ a")
             canonical(foo3.graph))
 
     def test_list_literal(self):
-        # Python equivalents for the empty list construction builtins. We need
-        # these otherwise the tests won't execute in regular Python mode.
-        def _construct_empty_int_list():
-            return []
-
-        def _construct_empty_float_list():
-            return []
-
-        def _construct_empty_tensor_list():
-            return []
-
         def reassign():
             x = [1]
             if True:
@@ -2141,6 +2140,14 @@ a")
             return c == [1, 2, 3, 2]
 
         self.checkScript(test_list_add, (), optimize=True)
+
+        def test_list_add_empty():
+            a = [1, 2, 3]
+            b = _construct_empty_int_list()
+            c = a + b
+            return c == [1, 2, 3]
+
+        self.checkScript(test_list_add_empty, (), optimize=True)
 
     def test_func_call(self):
         script = '''
